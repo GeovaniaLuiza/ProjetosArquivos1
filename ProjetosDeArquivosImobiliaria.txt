@@ -1,0 +1,195 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <time.h>
+
+//Programa criar um arquivo bin e manipula informações usando as funções de escrita e leitura
+
+//Criação de uma struct de registro
+typedef struct {
+	char *tipoimovel1, *tipoimovel2, *endereco, *data_disponivel;
+	int num_quartos, valor_aluguel;
+}reg;
+
+
+//FUNÇÕES declaradas abaixo estão implementadas depois da main!
+int valida(int val);									//confere se não passou de 1gb o tamanho solicitado
+int escolha_tam(); 										//Menu de tamanhos para escolha
+void ler_tudo(FILE *fp,char nome_arq[]); 				//le todo conteudo do arquivo e imprime na tela
+int rand_fill(); 										//retorna um int aleatorio
+char *randstring(size_t length);						//retorna uma string aleatoria de tamanho espeficado no parametro
+void current_size(int regg); 							// Imprime a cada 100MB
+
+
+int main(int argc, char *argv[]) {
+
+	FILE *fp; 								//arquivo
+	char c;								//char
+ 	int wanted_size,q;
+	double count; 						//int
+ 	reg registro;						//registros
+	clock_t start, end;						//variaveis do relógio
+    char nome_arq[] = "./data.bin";
+    		    
+	wanted_size=escolha_tam();				//tamano do arquivo
+	start = clock(); 						//inicia contagem do tempo
+	
+	//Abertura/ criação do arquivo
+ 	if (( fp = fopen(nome_arq,"wb+" )) == NULL ){
+ 		printf ("Erro na abertura do arquivo");
+		exit (0);
+	}
+	
+	
+	//Gera os valores aleatórios até encher o arquivo
+	count =0;
+	do{
+	
+		registro.num_quartos=rand_fill();
+		registro.data_disponivel=randstring(20);
+		registro.valor_aluguel=rand_fill();
+		registro.endereco=randstring(20);
+		registro.tipoimovel1=randstring(20);
+		registro.tipoimovel2=randstring(20);
+	
+
+		//Escreve valores no arquivo
+		fprintf(fp,"%i,%s,%i,%s,%s,%s\n",registro.num_quartos, registro.data_disponivel, registro.valor_aluguel,
+		 registro.endereco, registro.tipoimovel1 ,registro.tipoimovel2);
+		//imprime todos os valores separados por virgulas e com $separando os registros.
+		
+		count++;
+		
+		current_size(count); 
+		
+		//printf("\n Inclusão: %i ,  %s  ,  %s  ,  %s  ,  %s ",registro.num_quartos, registro.data_disponivel,
+		 registro.valor_aluguel, registro.endereco, registro.tipoimovel1 ,registro.tipoimovel2);
+		
+	}while(count<wanted_size);
+	
+    fclose(fp);
+ 	
+ 	printf("\nRegistros totais: %1.f",count);
+    
+    //Fim da contagem do tempo e computa tempo total.
+	end = clock(); 					//finaliza relogio
+	printf("\n\n--------------------------------------------------------------");
+	printf("\nTempo utilizado: %.10f\n",(((double)(end-start)/CLOCKS_PER_SEC))); // print do tempo utilizado
+    
+    printf("\nDeseja ler o arquivo? tecle 1\n    ");
+    scanf("%i",&q);
+    if(q==1){
+    	ler_tudo(fp,nome_arq); // funcao para ler todo arquivo e imprimir na tela
+	}
+    
+ }
+
+//Menu de selecao do tamanho do arquivo ou valor informado pelo usuario
+int escolha_tam(){
+	int escolha,val;
+	printf("Escolha o tamanho do arquivo:\n 1: 1KB\n 2: 1MB\n 3: 1GB\n 4: Quantidade de registros\n\nValor digitado:");
+	scanf("%i",&escolha);
+	switch(escolha){
+	 	case 1:
+	 		val = 5; //1KB
+	 		break;
+		case 2:
+			val = 11550; //1 MB
+			break;
+		case 3:
+			val= 1165000; //1GB
+			break;
+		case 4:
+			printf("Informe valor de registros:");
+			scanf("%i",&escolha);
+			if(valida(escolha)==0){
+				val=escolha;
+			}else{
+				printf("\nCriado com 1 registro!");
+				val=1;
+			}
+			break;
+		default:
+			val= 1;
+			break; 	
+	 }
+	return val;
+}
+
+//funcao que verifica se o tamanho maximo nao ultrapassou o limite de 1 GB
+int valida(int val){
+	if(val>11550001){
+		printf("\nArquivo ultrapassa o tamanho maximo de registros +1GB!\n");
+		return 1;
+	}
+	return 0;
+}
+
+int rand_fill(){
+	//gera valor int aleatorio até 9
+	int iRand;
+	iRand=(rand() % 9);
+	return iRand;
+}
+
+char *randstring(size_t tam) {
+	int n;
+    static char charset[] = "abcdefghijklmnopqrstuvwxyz"; 	//lista de chars possiveis  
+    char *randomString = NULL; //string
+
+    randomString = malloc(sizeof(char) * (tam +1));         //aloca tamanho da string  
+    for ( n = 0;n < tam;n++) {    							//for do tamanho         
+    	int key = rand() % (int)(sizeof(charset) -1); 		//pega um int do tamanho da lista
+		randomString[n] = charset[key];  					// a string recebe o char na posicao aleatoria sorteada acima
+    }
+
+    randomString[tam] = '\0'; 								//final da string
+    return randomString; 									// retorna valor 
+}
+
+void ler_tudo(FILE *fp,char nome_arq[]){
+   char c;
+	fp= fopen(nome_arq, "rb");
+  if(fp != NULL)
+  {
+  	//percorre arquivo até o final imprimindo na tela
+    while((c = fgetc(fp)) != EOF) putchar(c);
+    printf("%\n",c);
+    fclose(fp);
+  }
+
+}
+
+void current_size(int regg){	
+		if(regg==1155000){
+			printf("\n100MB!");
+		}
+		if(regg==2310000){
+			printf("\n200MB!");
+		}
+		if(regg==3465000){
+			printf("\n300MB!");
+		}
+		if(regg==4620000){
+			printf("\n400MB!");
+		}
+		if(regg==5775000){
+			printf("\n500MB!");
+		}
+		if(regg==6930000){
+			printf("\n600MB!");
+		}
+		if(regg==8085000){
+			printf("\n700MB!");
+		}
+		if(regg==9240000){
+			printf("\n800MB!");
+		}
+		if(regg==10395000){
+			printf("\n900MB!");
+		}
+		if(regg==11550000){
+			printf("\n1GB!");
+		}
+}
